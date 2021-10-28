@@ -2,6 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User';
 
 export default class UsersController {
+  
   public async index ({}: HttpContextContract) {
 
     const users = await User.all()
@@ -22,30 +23,105 @@ export default class UsersController {
       password: password
     }).then(user => {
 
-      console.log(user.name);
+      // console.log(user.name);
 
-      return response.send(user);
+      return response
+        .status(201)
+        .json({"Message":"Successfully Created", "Data": user});
 
     }).catch(error => {
 
-      console.log(error);
-
-      // return error;
+      return response
+        .status(500)
+        .json({"Message": "Error", "Error": error.sqlMessage});   
     });
 
     // return response.send({'Message':"Success", "Data": user.toJSON()});
 
   }
 
-  public async show ({}: HttpContextContract) {
+  /**
+   * 
+   * Display Specified Resource by Id
+   */
+
+  public async show ({ request, response}: HttpContextContract) {
+
+    const { id } = request.params();
+
+    const user = await User.find(id);
+
+    if(!user) {
+      
+      return response
+        .status(404)
+        .json({"Message": "User not found"});
+    }
+
+    return response
+      .status(200)
+      .json({"Message": "Successfully Returned", "Data": user.toJSON()});
   }
+    
+
+
+  
 
   public async edit ({}: HttpContextContract) {
   }
 
-  public async update ({}: HttpContextContract) {
+  /**
+   * Update a Resource
+   */
+
+  public async update ({request, response}: HttpContextContract) {
+
+    const { id } = request.params();
+
+    const user = await User.find(id);
+
+    if(!user) {
+      
+      return response
+        .status(404)
+        .json({"Message": "User not found"});
+    }
+
+    const { name, email, password } = request.all();
+
+    user.name = name;
+    user.email = email;
+    user.password = password;
+
+    await user.save();
+
+    return response
+      .status(200)
+      .json({"Message": "Successfully Updated", "Data": user.toJSON()});
   }
 
-  public async destroy ({}: HttpContextContract) {
+  /**
+   * Destroy a Resource
+   * 
+   */
+  public async destroy ({request, response}: HttpContextContract) {
+
+    const { id } = request.params();
+
+    const user = await User.find(id);
+
+    if(!user) {
+      
+      return response
+        .status(404)
+        .json({"Message": "User not found"});
+    }
+
+    await user.delete();
+
+    return response
+      .status(200)
+      .json({"Message": "Success"});
+
   }
 }
