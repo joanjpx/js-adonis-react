@@ -1,5 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User';
+import Hash from '@ioc:Adonis/Core/Hash';
+
 
 export default class UsersController {
   
@@ -15,12 +17,15 @@ export default class UsersController {
 
   public async store ( {request, response} : HttpContextContract) {
 
+    
     const { name, email, password } = request.all();
 
-    let user = await User.create({
+    const hashedPassword = await Hash.make(password);
+
+    await User.create({
       name: name,
       email: email,
-      password: password
+      password: hashedPassword
     }).then(user => {
 
       // console.log(user.name);
